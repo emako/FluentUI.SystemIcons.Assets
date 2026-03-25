@@ -40,15 +40,13 @@ from pathlib import Path
 try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError:
-    sys.exit(
-        "Pillow is required.  Install it with:\n"
-        "    pip install Pillow"
-    )
+    sys.exit("Pillow is required.  Install it with:\n" "    pip install Pillow")
 
 
 # ---------------------------------------------------------------------------
 # Core helpers
 # ---------------------------------------------------------------------------
+
 
 def load_icon_map(json_path: Path) -> dict[str, int]:
     """Return {icon_name: unicode_codepoint} from a Fluent icon JSON file."""
@@ -93,6 +91,7 @@ def render_glyph(
 # Per-font conversion
 # ---------------------------------------------------------------------------
 
+
 def convert_font(
     ttf_path: Path,
     output_root: Path,
@@ -128,6 +127,7 @@ def convert_font(
 # ---------------------------------------------------------------------------
 # CLI entry-point
 # ---------------------------------------------------------------------------
+
 
 def build_arg_parser() -> argparse.ArgumentParser:
     script_dir = Path(__file__).parent
