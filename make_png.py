@@ -15,7 +15,7 @@ Options
     --size INT                  Fallback PNG canvas size in pixels if icon name
                                 does not contain a numeric size token
                                 (default: 16)
-    --color {black,white,both}  Icon colour (default: both)
+    --color {black,white,both}  Icon colour (default: black)
     --fonts-dir PATH            Directory that contains the TTF files
                                 (default: <script_dir>/fluentui-system-icons/fonts)
     --output-dir PATH           Root output directory
@@ -25,8 +25,8 @@ Output layout
 -------------
     assets/png/
         FluentSystemIcons-Filled/
-            ic_fluent_add_16_filled_16_black.png
-            ic_fluent_add_16_filled_16_white.png
+            ic_fluent_add_16_filled.png
+            ic_fluent_add_16_filled_white.png
             ...
         FluentSystemIcons-Regular/
             ...
@@ -144,9 +144,9 @@ def convert_font(
         font = font_cache[icon_canvas_px]
         for color in colors:
             img = render_glyph(font, codepoint, icon_canvas_px, color)
-            # Naming: <icon_name>_<canvas_px>_<color>.png
-            # Example: ic_fluent_add_16_filled_16_black.png
-            filename = f"{icon_name}_{icon_canvas_px}_{color}.png"
+            # Keep source-style naming; only append color suffix for non-black variants.
+            # Example: ic_fluent_add_16_filled.png, ic_fluent_add_16_filled_white.png
+            filename = f"{icon_name}.png" if color == "black" else f"{icon_name}_{color}.png"
             img.save(font_out_dir / filename, format="PNG")
             total += 1
 
@@ -180,7 +180,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--color",
         choices=["black", "white", "both"],
-        default="both",
+        default="black",
         help="Icon foreground colour (transparent background)",
     )
     parser.add_argument(
