@@ -12,16 +12,18 @@ Usage
 
 Options
 -------
-    --size {16,24}              Output PNG canvas size in pixels (default: 16)
+    --size INT                  Fallback PNG canvas size in pixels if icon name
+                                does not contain a numeric size token
+                                (default: 16)
     --color {black,white,both}  Icon colour (default: both)
     --fonts-dir PATH            Directory that contains the TTF files
                                 (default: <script_dir>/fluentui-system-icons/fonts)
     --output-dir PATH           Root output directory
-                                (default: <script_dir>/assets/images)
+                                (default: <script_dir>/assets/png)
 
 Output layout
 -------------
-    assets/images/
+    assets/png/
         FluentSystemIcons-Filled/
             ic_fluent_add_16_filled_16_black.png
             ic_fluent_add_16_filled_16_white.png
@@ -34,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -87,6 +90,14 @@ def render_glyph(
     return img
 
 
+def infer_canvas_size_from_icon_name(icon_name: str) -> int | None:
+    """Infer icon size from name, e.g. ic_fluent_access_time_24_filled -> 24."""
+    match = re.search(r"_(\d+)(?:_[^_]+)?$", icon_name)
+    if not match:
+        return None
+    return int(match.group(1))
+
+
 # ---------------------------------------------------------------------------
 # Per-font conversion
 # ---------------------------------------------------------------------------
@@ -95,7 +106,7 @@ def render_glyph(
 def convert_font(
     ttf_path: Path,
     output_root: Path,
-    canvas_px: int,
+    fallback_canvas_px: int,
     colors: list[str],
 ) -> None:
     """Convert every glyph in *ttf_path* to PNGs under *output_root*."""
@@ -109,19 +120,41 @@ def convert_font(
     font_out_dir = output_root / font_stem
     font_out_dir.mkdir(parents=True, exist_ok=True)
 
-    font = _load_font_at_size(ttf_path, canvas_px)
+    font_cache: dict[int, ImageFont.FreeTypeFont] = {}
     total = 0
+    used_sizes: set[int] = set()
+    fallback_count = 0
 
     for icon_name, codepoint in icon_map.items():
+        inferred_size = infer_canvas_size_from_icon_name(icon_name)
+        if inferred_size is None:
+            icon_canvas_px = fallback_canvas_px
+            fallback_count += 1
+            print(
+                f"  [FALLBACK] {font_stem}: icon '{icon_name}' has no size token; "
+                f"using {fallback_canvas_px}px"
+            )
+        else:
+            icon_canvas_px = inferred_size
+        used_sizes.add(icon_canvas_px)
+
+        if icon_canvas_px not in font_cache:
+            font_cache[icon_canvas_px] = _load_font_at_size(ttf_path, icon_canvas_px)
+
+        font = font_cache[icon_canvas_px]
         for color in colors:
-            img = render_glyph(font, codepoint, canvas_px, color)
+            img = render_glyph(font, codepoint, icon_canvas_px, color)
             # Naming: <icon_name>_<canvas_px>_<color>.png
             # Example: ic_fluent_add_16_filled_16_black.png
-            filename = f"{icon_name}_{canvas_px}_{color}.png"
+            filename = f"{icon_name}_{icon_canvas_px}_{color}.png"
             img.save(font_out_dir / filename, format="PNG")
             total += 1
 
-    print(f"  {font_stem}: {total} PNG(s) -> {font_out_dir}")
+    size_list = ", ".join(str(px) for px in sorted(used_sizes))
+    print(
+        f"  {font_stem}: {total} PNG(s), sizes [{size_list}], "
+        f"fallback used {fallback_count} time(s) -> {font_out_dir}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -140,10 +173,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--size",
         type=int,
-        choices=[16, 24],
         default=16,
-        metavar="{16,24}",
-        help="Output PNG canvas size in pixels",
+        metavar="INT",
+        help="Fallback output PNG canvas size in pixels when icon name has no size token",
     )
     parser.add_argument(
         "--color",
@@ -161,7 +193,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=script_dir / "assets" / "images",
+        default=script_dir / "assets" / "png",
         metavar="PATH",
         help="Root output directory; one sub-folder is created per TTF",
     )
@@ -174,7 +206,7 @@ def main() -> None:
 
     fonts_dir: Path = args.fonts_dir
     output_dir: Path = args.output_dir
-    canvas_px: int = args.size
+    fallback_canvas_px: int = args.size
     colors: list[str] = ["black", "white"] if args.color == "both" else [args.color]
 
     if not fonts_dir.is_dir():
@@ -185,7 +217,7 @@ def main() -> None:
         sys.exit(f"No TTF files found in {fonts_dir}")
 
     print(
-        f"Canvas size : {canvas_px}x{canvas_px} px\n"
+        f"Canvas size : auto by icon name (fallback {fallback_canvas_px}px)\n"
         f"Colours     : {', '.join(colors)}\n"
         f"Fonts dir   : {fonts_dir}\n"
         f"Output dir  : {output_dir}\n"
@@ -194,7 +226,7 @@ def main() -> None:
 
     for ttf_path in ttf_files:
         print(f"Processing {ttf_path.name} ...")
-        convert_font(ttf_path, output_dir, canvas_px, colors)
+        convert_font(ttf_path, output_dir, fallback_canvas_px, colors)
 
     print("\nDone.")
 
