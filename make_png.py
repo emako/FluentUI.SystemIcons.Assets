@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-convert_ttf_to_png.py
+make_png.py
 
 Convert all TTF icon fonts in the fonts/ directory to individual PNG images.
 Each glyph in the font is rendered using its corresponding JSON name-to-codepoint
@@ -8,7 +8,7 @@ mapping (e.g. FluentSystemIcons-Filled.json).
 
 Usage
 -----
-    python convert_ttf_to_png.py [options]
+    python make_png.py [options]
 
 Options
 -------
