@@ -9,5 +9,13 @@
     Width="800"
     Height="450"
     mc:Ignorable="d">
-    <Grid />
+    <Grid>
+        <Border
+            Width="16"
+            Height="16"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+            <Image Source="pack://application:,,,/FluentUI.SystemIcons.Assets/ic_fluent_add_16_regular.png" Stretch="Uniform" />
+        </Border>
+    </Grid>
 </Window>

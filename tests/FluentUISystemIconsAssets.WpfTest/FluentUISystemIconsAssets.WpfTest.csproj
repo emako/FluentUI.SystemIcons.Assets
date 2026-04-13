@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
@@ -11,9 +12,4 @@
     <PackageReference Include="FluentUI.SystemIcons.Assets" Version="1.1.323" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="$(NuGetPackageRoot)\FluentUI.SystemIcons.Assets\1.1.323\assets\png\FluentSystemIcons-Regular\*16*.png">
-      <Link>FluentUI.SystemIcons.Assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </Resource>
-  </ItemGroup>
 </Project>
