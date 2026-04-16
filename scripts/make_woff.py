@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """
-Copy Fluent UI System Icons WOFF2 files to target directory.
+Copy Fluent UI System Icons WOFF files to target directory.
 """
 
-import os
 import shutil
 import argparse
 from pathlib import Path
@@ -11,25 +10,29 @@ from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Copy Fluent UI System Icons WOFF2 files to target directory"
+        description="Copy Fluent UI System Icons WOFF files to target directory"
     )
     parser.add_argument(
         "--output-dir",
         "-o",
-        default="assets/woff2",
-        help="Output directory (default: assets/woff2)",
+        default="assets/woff",
+        help="Output directory (default: assets/woff)",
     )
 
     args = parser.parse_args()
 
     # Source directory
-    script_dir = Path(__file__).parent
+    script_dir = Path(__file__).resolve().parent
+    repo_root = script_dir.parent
     source_dir = (
-        script_dir / "fluentui-system-icons" / "fonts"
+        repo_root / "fluentui-system-icons" / "fonts"
     )
 
     # Target directory
-    output_dir = Path(args.output_dir)
+    # Resolve relative paths from the repo root so behavior is stable
+    # even when invoked from outside the repository root.
+    output_dir_arg = Path(args.output_dir)
+    output_dir = output_dir_arg if output_dir_arg.is_absolute() else repo_root / output_dir_arg
 
     # Validate source directory exists
     if not source_dir.exists():
@@ -41,14 +44,18 @@ def main():
     print(f"Output directory: {output_dir}")
 
     # File patterns to copy
-    patterns = ["*.woff2"]
+    patterns = ["*.woff"]
     files_copied = 0
 
     for pattern in patterns:
         for source_file in source_dir.glob(pattern):
             target_file = output_dir / source_file.name
             print(f"Copying: {source_file.name}")
-            shutil.copy2(source_file, target_file)
+            try:
+                shutil.copy2(source_file, target_file)
+            except OSError as exc:
+                print(f"Error: Failed to copy {source_file.name}: {exc}")
+                return 1
             files_copied += 1
 
     print(f"\nSuccessfully copied {files_copied} files to {output_dir}")

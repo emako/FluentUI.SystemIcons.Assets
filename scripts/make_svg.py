@@ -156,7 +156,7 @@ def organize_svgs(assets_dir: Path, output_dir: Path, clean: bool) -> None:
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    script_dir = Path(__file__).parent
+    repo_root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(
         description=(
             "Organize existing Fluent System Icon SVG assets into style folders."
@@ -166,14 +166,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--assets-dir",
         type=Path,
-        default=script_dir / "fluentui-system-icons" / "assets",
+        default=repo_root / "fluentui-system-icons" / "assets",
         metavar="PATH",
         help="Directory containing icon group folders with SVG files",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=script_dir / "assets" / "svg",
+        default=repo_root / "assets" / "svg",
         metavar="PATH",
         help="Root output directory; one sub-folder is created per style category",
     )

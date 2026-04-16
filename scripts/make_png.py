@@ -163,7 +163,7 @@ def convert_font(
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    script_dir = Path(__file__).parent
+    repo_root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(
         description=(
             "Render every glyph in Fluent System Icon TTF fonts as PNG images."
@@ -186,14 +186,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--fonts-dir",
         type=Path,
-        default=script_dir / "fluentui-system-icons" / "fonts",
+        default=repo_root / "fluentui-system-icons" / "fonts",
         metavar="PATH",
         help="Directory containing the TTF files and their JSON mappings",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=script_dir / "assets" / "png",
+        default=repo_root / "assets" / "png",
         metavar="PATH",
         help="Root output directory; one sub-folder is created per TTF",
     )

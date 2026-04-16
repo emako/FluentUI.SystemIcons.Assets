@@ -5,6 +5,7 @@ import sys
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(script_dir)
     pattern = os.path.join(script_dir, "make_*.py")
     scripts = sorted(glob.glob(pattern))
 
@@ -18,7 +19,7 @@ def main():
     failed = []
     for script in scripts:
         print(f"-> Running {os.path.basename(script)} ...")
-        result = subprocess.run([sys.executable, script], cwd=script_dir)
+        result = subprocess.run([sys.executable, script], cwd=repo_root)
         if result.returncode != 0:
             print(f"   FAILED (exit code {result.returncode})")
             failed.append(script)

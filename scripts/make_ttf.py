@@ -23,13 +23,15 @@ def main():
     args = parser.parse_args()
 
     # Source directory
-    script_dir = Path(__file__).parent
+    script_dir = Path(__file__).resolve().parent
+    repo_root = script_dir.parent
     source_dir = (
-        script_dir / "fluentui-system-icons" / "fonts"
+        repo_root / "fluentui-system-icons" / "fonts"
     )
 
     # Target directory
-    output_dir = Path(args.output_dir)
+    output_dir_arg = Path(args.output_dir)
+    output_dir = output_dir_arg if output_dir_arg.is_absolute() else repo_root / output_dir_arg
 
     # Validate source directory exists
     if not source_dir.exists():
